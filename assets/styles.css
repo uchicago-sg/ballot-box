@@ -1,0 +1,40 @@
+body {
+	background-color: #f8f8f8;
+}
+
+.container {
+	max-width: 40em;
+	margin: 0 auto;
+}
+
+.masthead {
+	margin: 1em auto;
+	display: block;
+}
+
+.vote-right {
+	width: 10em;
+}
+
+.vote-button {
+	display: block;
+	margin-bottom: 0.5em;
+}
+
+.vote-caption {
+	margin-top: -1.7em;
+	text-align: center;
+	font-size: 0.8em;
+}
+
+.vote-edit-button {
+	float: right;
+}
+
+.panel-title {
+	overflow: hidden;
+}
+
+.vote-plugin {
+	background-color: #f8f8f8;
+}
