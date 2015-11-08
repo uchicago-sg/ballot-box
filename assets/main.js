@@ -43,6 +43,7 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
     $scope.voteRandomized = data.randomized;
     $scope.voteWeight = data.weight;
     $scope.voteLimits = data.limit;
+    $scope.isAdmin = data.isadmin;
   }
   
   $scope.updateCandidates(_DATA);

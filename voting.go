@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+	"math/rand"
 )
 
 type VoteSubmission struct {
@@ -28,17 +30,36 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	u := user.Current(c)
 
-	if u == nil {
+	if u == nil || strings.Split(u.Email, "@")[1] != "uchicago.edu" {
 		url, err := user.LoginURL(c, r.URL.Path)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+		url += "&hd=uchicago.edu"
 		http.Redirect(w, r, url, 303)
 		return
 	}
 
-	if r.Method == "POST" && verb == "" {
+	if u.Admin && eid == 0 {
+
+		w.Header().Add("Content-type", "text/html")
+		fmt.Fprintf(w,
+			"<!doctype html><html>"+
+			"<head>"+
+			"<title>Student Government</title>"+
+			"<meta name='viewport' content='width=device-width, initial-scale=1'>"+
+			"<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/"+
+			"bootstrap/3.3.4/css/bootstrap.min.css'>"+
+			"<link rel='stylesheet' href='/styles.css'>"+
+			"</head>"+
+			"<body class='container'><form method='post' action='/%d?create=y'>" +
+                        "<input type='submit' value='create'/></form></body>"+
+			"</html>", rand.Int31(),
+		)
+		return
+
+	} else if r.Method == "POST" && verb == "" && u.Admin {
 
 		err := json.NewDecoder(r.Body).Decode(&e)
 		if err != nil {
@@ -92,7 +113,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-	} else if r.Method == "GET" && verb == "results" && ext == "csv" {
+	} else if r.Method == "GET" && verb == "results" && ext == "csv" && u.Admin {
 
 		if err := datastore.Get(c, k, e); err != nil {
 			http.Error(w, err.Error(), 500)
@@ -110,16 +131,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		return
 
-	} else if r.Method == "GET" && verb == "" {
+	} else if r.Method == "GET" && verb == "" && eid > 0 {
 
 		if err := datastore.Get(c, k, e); err != nil {
-			http.Error(w, err.Error(), 500)
+			if err == datastore.ErrNoSuchEntity {
+				if u.Admin {
+					if _, err := datastore.Put(c, k, e); err != nil {
+						http.Error(w, err.Error(), 500)
+					}
+					return
+				} else {
+					http.NotFound(w, r)
+				}
+			} else {
+				http.Error(w, err.Error(), 500)
+			}
 			return
 		}
 
 	} else {
 
-		http.Error(w, "Object not found", 404)
+		http.NotFound(w, r)
 		return
 
 	}
@@ -139,6 +171,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	vote, err := GetVote(c, eid, u.Email)
 	e.MyVote = vote
+	e.IsAdmin = u.Admin
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

@@ -3,7 +3,7 @@
     <img src="/sg.png" style="width:3in" class="masthead hidden-xs hidden-sm"/>
   </a>
   <div class="panel panel-default">
-    <div class="panel-heading">
+    <div class="panel-heading" ng-show="isAdmin">
       <h3 class="panel-title">
       <a class="btn btn-default"
          href="{{ baseURL + '/results.csv' }}">Download CSV</a>

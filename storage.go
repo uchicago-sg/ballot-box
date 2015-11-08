@@ -11,6 +11,7 @@ import (
 type Election struct {
 	Candidates []Candidate `json:"candidates"`
 	MyVote     string      `json:"myvote" datastore:"-"`
+	IsAdmin    bool        `json:"isadmin" datastore:"-"`
 	Randomized bool        `json:"randomized"`
 	Limit      bool        `json:"limit"`
 	Weight     int         `json:"weight"`
