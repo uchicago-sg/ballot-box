@@ -58,7 +58,7 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
       
       $scope.updateCandidates(data);
     });
-  }, 5 * 1000);
+  }, 30 * 1000);
   
   $scope.setEditMode = function(newMode) {
     $scope.candidates = $scope.candidates.filter(function(cand) {
