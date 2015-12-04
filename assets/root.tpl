@@ -28,6 +28,9 @@
               <li class="{{ voteRandomized ? 'disabled' : '' }}">
                 <a ng-click="setOption('randomized', true)">
                   Randomized Voting</a></li>
+              <li class="{{ showProgress ? 'disabled' : '' }}">
+                <a ng-click="setOption('showProgress', true)">
+                  Progress Bar</a></li>
             </ul>
           </div>
         </td>
@@ -67,6 +70,18 @@
           </a>
         </td>
       </tr>
+      <tr ng-show="editMode && showProgress" class="form-inline vote-plugin">
+        <td>
+          <label>
+            Voters can see the number of spaces left.
+          </label>
+        </td>
+        <td>
+          <a class="btn btn-danger" ng-click="setOption('showProgress', false)">
+            Disable
+          </a>
+        </td>
+      </tr>
       <tr ng-repeat="candidate in candidates |
               orderBy:(!editMode && voteRandomized ? 'order' : '')">
         <td ng-hide="editMode">
@@ -94,14 +109,14 @@
                ng-click="voteFor(candidate)">
               {{ getVerbFor(candidate) }}
           </a>
-          <div class="progress vote-progress" ng-show="candidate.request">
+          <div class="progress vote-progress" ng-show="candidate.request && showProgress">
             <div class="progress-bar progress-bar-success progress-bar-striped"
                  style="
                    width:{{ candidate.progress * (voteWeight || 1) * 100
                        / candidate.request }}%;">
             </div>
           </div>
-          <div class="vote-caption" ng-show="candidate.request">
+          <div class="vote-caption" ng-show="candidate.request && showProgress">
             {{ candidate.progress * (voteWeight || 1) | number:0 }} of
             {{ candidate.request | number:0 }}
           </div>

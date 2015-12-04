@@ -29,6 +29,7 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
   $scope.voteLimits = false;
   $scope.voteWeight = 0;
   $scope.voteRandomized = false;
+  $scope.showProgress = false;
   $scope.randomSeed = ":" + Math.random().toString();
   $scope.baseURL = window.location.href;
   
@@ -44,6 +45,7 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
     $scope.voteWeight = data.weight;
     $scope.voteLimits = data.limit;
     $scope.isAdmin = data.isadmin;
+    $scope.showProgress = data.showProgress;
   }
   
   $scope.updateCandidates(_DATA);
@@ -70,7 +72,8 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
         "candidates": $scope.candidates,
         "limit": $scope.voteLimits,
         "weight": $scope.voteWeight,
-        "randomized": $scope.voteRandomized
+        "randomized": $scope.voteRandomized,
+		"showProgress": $scope.showProgress
       }).success(function(data) {
         $scope.updateCandidates(data);
       });
@@ -139,5 +142,7 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
       $scope.voteWeight = 10;
     else if (option == "randomized")
       $scope.voteRandomized = enabled;
+    else if (option == "showProgress")
+      $scope.showProgress = enabled;
   }
 });

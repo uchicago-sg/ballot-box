@@ -15,6 +15,7 @@ type Election struct {
 	Randomized bool        `json:"randomized"`
 	Limit      bool        `json:"limit"`
 	Weight     int         `json:"weight"`
+	Progress   bool        `json:"showProgress"`
 }
 
 type Candidate struct {
