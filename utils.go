@@ -20,6 +20,7 @@ func RouteURL(path string) (int64, string, string) {
 		verb = parts[1]
 	}
 
+  parts = strings.Split(parts[0], "-")
 	eid, _ := strconv.ParseInt(parts[0], 10, 32)
 
 	return eid, verb, ext
