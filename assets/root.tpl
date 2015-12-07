@@ -2,6 +2,10 @@
   <a href="http://sg.uchicago.edu">
     <img src="/sg.png" style="width:3in" class="masthead hidden-xs hidden-sm"/>
   </a>
+  <div class="alert alert-info" ng-show="vote && !pending">
+	You are confirmed for <strong>{{ getCandidateFor(vote).name }}</strong>.
+	<a ng-click="voteFor(null)" class="btn btn-default">Cancel Selection</a>
+  </div>
   <div class="panel panel-default">
     <div class="panel-heading" ng-show="isAdmin">
       <h3 class="panel-title">
@@ -109,14 +113,14 @@
                ng-click="voteFor(candidate)">
               {{ getVerbFor(candidate) }}
           </a>
-          <div class="progress vote-progress" ng-show="candidate.request && showProgress">
+          <div class="progress vote-progress" ng-show="candidate.request && (showProgress || isAdmin)">
             <div class="progress-bar progress-bar-success progress-bar-striped"
                  style="
                    width:{{ candidate.progress * (voteWeight || 1) * 100
                        / candidate.request }}%;">
             </div>
           </div>
-          <div class="vote-caption" ng-show="candidate.request && showProgress">
+          <div class="vote-caption" ng-show="candidate.request && (showProgress || isAdmin)">
             {{ candidate.progress * (voteWeight || 1) | number:0 }} of
             {{ candidate.request | number:0 }}
           </div>

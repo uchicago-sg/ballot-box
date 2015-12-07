@@ -87,14 +87,14 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
     if ($scope.pending)
       return;
     
-    $scope.vote = candidate.id;
+    $scope.vote = candidate ? candidate.id : "";
     $scope.pending = true;
     
     $http({
       method: "POST",
       url: window.location.href + "/vote.json",
       data: {
-        "candidate": candidate.id
+        "candidate": candidate ? candidate.id : ""
       }
     }).success(function(data) {
       $timeout(function() {
@@ -124,6 +124,13 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
       else
         return conj[2];
     return conj[0];
+  };
+
+  $scope.getCandidateFor = function(vote) {
+    for (var i = 0; $scope.candidates[i]; i++) {
+      if ($scope.candidates[i].id == vote)
+        return $scope.candidates[i];
+    }
   };
   
   $scope.addNewRow = function() {

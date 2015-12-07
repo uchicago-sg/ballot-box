@@ -3,8 +3,10 @@ package voting
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/memcache"
 	"encoding/csv"
 	"errors"
+	"strconv"
 	"fmt"
 )
 
@@ -34,6 +36,17 @@ type Vote struct {
 	Vote     string
 	Election int64
 	Voter    string
+}
+
+var IntCodec = &memcache.Codec{
+	Marshal: func(i interface{}) ([]byte, error) {
+		return []byte(strconv.Itoa(*i.(*int))), nil
+	},
+	Unmarshal: func(b []byte, i interface{}) (err error) {
+		y := i.(*int)
+		*y, err = strconv.Atoi(string(b))
+		return
+	},
 }
 
 func MakeElectionKey(c appengine.Context, eid int64) *datastore.Key {
@@ -74,19 +87,30 @@ func Mutate(c appengine.Context, key *datastore.Key, ent interface{},
 
 func ChangeCount(c appengine.Context, eid int64, cand string, amt, lmt int) error {
 	e := new(Counter)
-	return Mutate(c, MakeCounterKey(c, eid, cand), e, func() (bool, error) {
+	key := MakeCounterKey(c, eid, cand)
+	return Mutate(c, key, e, func() (bool, error) {
 		if lmt != 0 && e.Count >= lmt {
 			return false, errors.New("Cannot exceed limit")
 		}
 		e.Count += amt
+		memcache.IncrementExisting(c, key.Encode(), int64(amt))
 		return true, nil
 	})
 }
 
 func GetCount(c appengine.Context, eid int64, cand string) (int, error) {
+	key := MakeCounterKey(c, eid, cand)
 	e := new(Counter)
-	err := Mutate(c, MakeCounterKey(c, eid, cand), e, func() (bool, error) {
+	count := int(0)
+	if _, err := IntCodec.Get(c, key.Encode(), &count); err == nil {
+		return count, nil
+	}
+	err := Mutate(c, key, e, func() (bool, error) {
 		return false, nil
+	})
+	IntCodec.Set(c, &memcache.Item{
+		Key: key.Encode(),
+		Object: &e.Count,
 	})
 	return e.Count, err
 }
@@ -105,8 +129,10 @@ func ChangeVote(c appengine.Context, eid int64, voter, cand string, limit int) e
 			}
 		}
 		e.Vote = cand
-		if err := ChangeCount(c, eid, cand, +1, limit); err != nil {
-			return false, err
+		if cand != "" {
+			if err := ChangeCount(c, eid, cand, +1, limit); err != nil {
+				return false, err
+			}
 		}
 		return true, nil
 	})
