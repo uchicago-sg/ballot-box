@@ -22,7 +22,7 @@ window.UUID = {
   }
 };
 
-voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
+voteApp.controller('VoteCtrl', function ($sce, $scope, $timeout, $interval, $http) {
   $scope.vote = "";
   $scope.pending = false;
   $scope.editMode = false;
@@ -32,6 +32,9 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
   $scope.showProgress = false;
   $scope.randomSeed = ":" + Math.random().toString();
   $scope.baseURL = window.location.href;
+  $scope.descriptionText = "";
+  $scope.hasDescription = false;
+  $scope.voteLimit = 1;
   
   $scope.updateCandidates = function(data) {
     var newCands = data.candidates || [];
@@ -40,12 +43,19 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
       cand.order = (index + $scope.randomSeed).hashCode();
     });
     $scope.candidates = newCands;
-    $scope.vote = data.myvote;
+    $scope.vote = data.myvote ? data.myvote : Array(data.secondaries + 1);
     $scope.voteRandomized = data.randomized;
     $scope.voteWeight = data.weight;
     $scope.voteLimits = data.limit;
     $scope.isAdmin = data.isadmin;
     $scope.showProgress = data.showProgress;
+    $scope.hasDescription = !!data.description;
+    $scope.descriptionText = data.description;
+    $scope.voteLimit = (data.secondaries || 0) + 1;
+
+    while ($scope.vote.length > $scope.voteLimit) {
+      $scope.vote.pop();
+    }
   }
   
   $scope.updateCandidates(_DATA);
@@ -73,7 +83,9 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
         "limit": $scope.voteLimits,
         "weight": $scope.voteWeight,
         "randomized": $scope.voteRandomized,
-		"showProgress": $scope.showProgress
+        "showProgress": $scope.showProgress,
+        "description": $scope.descriptionText,
+        "secondaries": $scope.voteLimit - 1
       }).success(function(data) {
         $scope.updateCandidates(data);
       });
@@ -81,20 +93,46 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
     $scope.editMode = newMode;
   };
   
-  $scope.voteFor = function(candidate) {
-    var prev = $scope.vote;
-    
+  $scope.voteFor = function(candidate, order) {
+    var prev = $scope.vote.slice();
+
     if ($scope.pending)
       return;
+
+    if (!candidate)
+      $scope.vote = Array($scope.vote.length);
+
+    var id = candidate ? candidate.id : null
+
+    for (var i = 0; i < $scope.vote.length; i++) {
+      if ($scope.vote[i] == id) {
+        $scope.vote[i] = "";
+      }
+    }
+
+    $scope.vote[order] = id;
+
+    var i;
+    for (i = 0; i < $scope.vote.length; i++) {
+      if ($scope.vote[i] != "")
+        break;
+    }
     
-    $scope.vote = candidate ? candidate.id : "";
+    for (var j = 0; j < i; j++) {
+      if ($scope.vote[j] == "") {
+        $scope.vote.splice(0, 1);
+        $scope.vote.push("");
+        break;
+      }
+    }
+
     $scope.pending = true;
-    
+
     $http({
       method: "POST",
       url: window.location.href + "/vote.json",
       data: {
-        "candidate": candidate ? candidate.id : ""
+        "candidates": $scope.vote
       }
     }).success(function(data) {
       $timeout(function() {
@@ -151,5 +189,17 @@ voteApp.controller('VoteCtrl', function ($scope, $timeout, $interval, $http) {
       $scope.voteRandomized = enabled;
     else if (option == "showProgress")
       $scope.showProgress = enabled;
+    else if (option == "hasDescription")
+      $scope.hasDescription = enabled;
+    else if (option == "voteLimit")
+      $scope.voteLimit = 2;
+  }
+  
+  $scope.markdown = function(text) {
+    try {
+      return $sce.trustAsHtml(new showdown.Converter().makeHtml(text));
+    } catch (e) {
+      return text; // in case the library fails.
+    }
   }
 });

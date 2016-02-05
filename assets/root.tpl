@@ -2,9 +2,15 @@
   <a href="http://sg.uchicago.edu">
     <img src="/sg.png" style="width:3in" class="masthead hidden-xs hidden-sm"/>
   </a>
-  <div class="alert alert-info" ng-show="vote && !pending">
-	You are confirmed for <strong>{{ getCandidateFor(vote).name }}</strong>.
+  <div class="alert alert-info" ng-show="vote.join('') && !pending">
+	You are confirmed for
+    <strong ng-repeat="cand in vote track by $index">{{
+        $index > 0 ? "," : "" }}
+      {{ getCandidateFor(cand).name }}</strong>.
 	<a ng-click="voteFor(null)" class="btn btn-default">Cancel Selection</a>
+  </div>
+  <div class="panel panel-default" ng-show="hasDescription && !editMode">
+    <div class="panel-body" ng-bind-html="markdown(descriptionText)"></div>
   </div>
   <div class="panel panel-default">
     <div class="panel-heading" ng-show="isAdmin">
@@ -35,6 +41,12 @@
               <li class="{{ showProgress ? 'disabled' : '' }}">
                 <a ng-click="setOption('showProgress', true)">
                   Progress Bar</a></li>
+              <li class="{{ hasDescription ? 'disabled' : '' }}">
+                <a ng-click="setOption('hasDescription', true)">
+                  Description</a></li>
+              <li class="{{ voteLimit > 1 ? 'disabled' : '' }}">
+                <a ng-click="setOption('voteLimit', true)">
+                  Rank Several</a></li>
             </ul>
           </div>
         </td>
@@ -86,11 +98,36 @@
           </a>
         </td>
       </tr>
+      <tr ng-show="editMode && hasDescription" class="vote-plugin">
+        <td>
+          <textarea placeholder="(enter a description)"
+             ng-model="descriptionText"
+             class="form-control"></textarea>
+        </td>
+        <td>
+          <a class="btn btn-danger"
+             ng-click="setOption('hasDescription', false)">
+            Disable
+          </a>
+        </td>
+      </tr>
+      <tr ng-show="editMode && voteLimit > 1" class="form-inline vote-plugin">
+        <td>
+          <label>
+            Voters can rank this many options:
+          </label>
+        </td>
+        <td>
+          <input type="number" class="form-control" style="width:5em"
+            ng-model="voteLimit"/>
+        </td>
+      </tr>
       <tr ng-repeat="candidate in candidates |
               orderBy:(!editMode && voteRandomized ? 'order' : '')">
         <td ng-hide="editMode">
           <p><strong>{{ candidate.name }}</strong>
-            {{ candidate.description }}</p>
+            <span ng-bind-html="markdown(candidate.description)">
+              {{ candidate.description }}</span></p>
         </td>
         <td ng-show="editMode">
           <input type="text" class="form-control"
@@ -101,6 +138,17 @@
                     placeholder="(description)"></textarea>
         </td>
         <td style="text-align:right" ng-hide="editMode" class="vote-right">
+          <div class="btn-group vote-button" ng-show="vote.length > 1">
+            <a ng-repeat="cand in vote track by $index"
+               class="btn {{ cand == candidate.id ?
+                          (pending ? 'btn-success disabled' :
+                            'btn-success active')
+                            : ((candidate.progress + 1) * (voteWeight || 1)
+                                > candidate.request ?
+                                'btn-default disabled'
+                                : 'btn-default') }}"
+               ng-click="voteFor(candidate, $index)">#{{$index + 1}}</a>
+          </div>
           <a class="btn vote-button
                       {{ vote == candidate.id ?
                           (pending ? 'btn-primary disabled' :
@@ -110,7 +158,8 @@
                                 'btn-primary disabled'
                                 : 'btn-primary')
                         }}"
-               ng-click="voteFor(candidate)">
+               ng-click="voteFor(candidate, 0)"
+               ng-show="vote.length == 1">
               {{ getVerbFor(candidate) }}
           </a>
           <div class="progress vote-progress" ng-show="candidate.request && (showProgress || isAdmin)">

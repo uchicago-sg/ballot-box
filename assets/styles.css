@@ -17,8 +17,11 @@ body {
 }
 
 .vote-button {
-	display: block;
 	margin-bottom: 0.5em;
+}
+
+a.vote-button {
+  display: block;
 }
 
 .vote-caption {

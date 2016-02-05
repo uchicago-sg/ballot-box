@@ -1,11 +1,10 @@
 package voting
 
 import (
-	"strconv"
 	"strings"
 )
 
-func RouteURL(path string) (int64, string, string) {
+func RouteURL(path string) (string, string, string) {
 	parts := strings.SplitN(path[1:], ".", 2)
 	ext := ""
 	verb := ""
@@ -20,8 +19,5 @@ func RouteURL(path string) (int64, string, string) {
 		verb = parts[1]
 	}
 
-  parts = strings.Split(parts[0], "-")
-	eid, _ := strconv.ParseInt(parts[0], 10, 32)
-
-	return eid, verb, ext
+	return parts[0], verb, ext
 }
