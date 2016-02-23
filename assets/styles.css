@@ -41,3 +41,15 @@ a.vote-button {
 .vote-plugin {
 	background-color: #f8f8f8;
 }
+
+tr.collapsed th {
+}
+
+tr.expanded th {
+	background-color: #f8f8f8;
+	color: #999;
+}
+
+tr.collapsed span, tr.expanded span {
+	color: #ccc;
+}

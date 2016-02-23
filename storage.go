@@ -29,6 +29,7 @@ type Candidate struct {
 	Description string `json:"description"`
 	Request     int    `json:"request"`
 	Progress    int    `json:"progress" datastore:"-"`
+	Section     string `json:"section"`
 }
 
 type Counter struct {

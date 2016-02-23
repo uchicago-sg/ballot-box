@@ -122,63 +122,73 @@
             ng-model="voteLimit"/>
         </td>
       </tr>
-      <tr ng-repeat="candidate in candidates |
-              orderBy:(!editMode && voteRandomized ? 'order' : '')">
-        <td ng-hide="editMode">
-          <p><strong>{{ candidate.name }}</strong>
-            <span ng-bind-html="markdown(candidate.description)">
-              {{ candidate.description }}</span></p>
-        </td>
-        <td ng-show="editMode">
-          <input type="text" class="form-control"
-                 ng-model="candidate.name"
-                 placeholder="(name)"/>
-          <textarea class="form-control"
-                    ng-model="candidate.description"
-                    placeholder="(description)"></textarea>
-        </td>
-        <td style="text-align:right" ng-hide="editMode" class="vote-right">
-          <div class="btn-group vote-button" ng-show="vote.length > 1">
-            <a ng-repeat="cand in vote track by $index"
-               class="btn {{ cand == candidate.id ?
-                          (pending ? 'btn-success disabled' :
-                            'btn-success active')
-                            : ((candidate.progress + 1) * (voteWeight || 1)
-                                > candidate.request ?
-                                'btn-default disabled'
-                                : 'btn-default') }}"
-               ng-click="voteFor(candidate, $index)">#{{$index + 1}}</a>
-          </div>
-          <a class="btn vote-button
-                      {{ vote == candidate.id ?
-                          (pending ? 'btn-primary disabled' :
-                            'btn-success active')
-                            : ((candidate.progress + 1) * (voteWeight || 1)
-                                > candidate.request ?
-                                'btn-primary disabled'
-                                : 'btn-primary')
-                        }}"
-               ng-click="voteFor(candidate, 0)"
-               ng-show="vote.length == 1">
-              {{ getVerbFor(candidate) }}
-          </a>
-          <div class="progress vote-progress" ng-show="candidate.request && (showProgress || isAdmin)">
-            <div class="progress-bar progress-bar-success progress-bar-striped"
-                 style="
-                   width:{{ candidate.progress * (voteWeight || 1) * 100
-                       / candidate.request }}%;">
+      <tbody ng-repeat="(key, section) in candidates | groupBy:(editMode ? '' : 'section')">
+        <tr class="{{ expanded[key] ? 'expanded' : 'collapsed' }}"
+            ng-show="!editMode && key"
+            ng-click="expand(key)"><th colspan="2">
+              <span>{{ expanded[key] ? "\u25BC" : "\u25B6" }}</span>
+              {{ key }}</th></tr>
+        <tr ng-show="expanded[key] || !key || editMode"
+            ng-repeat="candidate in section |
+                orderBy:(!editMode && voteRandomized ? ['section','order'] : '')">
+          <td ng-hide="editMode">
+            <p><strong>{{ candidate.name }}</strong>
+              <span ng-bind-html="markdown(candidate.description)">
+                {{ candidate.description }}</span></p>
+          </td>
+          <td ng-show="editMode">
+            <input type="text" class="form-control"
+                   ng-model="candidate.name"
+                   placeholder="(name)"/>
+            <textarea class="form-control"
+                      ng-model="candidate.description"
+                      placeholder="(description)"></textarea>
+          </td>
+          <td style="text-align:right" ng-hide="editMode" class="vote-right">
+            <div class="btn-group vote-button" ng-show="vote.length > 1">
+              <a ng-repeat="cand in vote track by $index"
+                 class="btn {{ cand == candidate.id ?
+                            (pending ? 'btn-success disabled' :
+                              'btn-success active')
+                              : ((candidate.progress + 1) * (voteWeight || 1)
+                                  > candidate.request ?
+                                  'btn-default disabled'
+                                  : 'btn-default') }}"
+                 ng-click="voteFor(candidate, $index)">#{{$index + 1}}</a>
             </div>
-          </div>
-          <div class="vote-caption" ng-show="candidate.request && (showProgress || isAdmin)">
-            {{ candidate.progress * (voteWeight || 1) | number:0 }} of
-            {{ candidate.request | number:0 }}
-          </div>
-        </td>
-        <td ng-show="editMode" class="vote-right">
-          <input type="number" class="form-control"
-                 ng-model="candidate.request" placeholder="(no target)"/>
-        </td>
-      </tr>
+            <a class="btn vote-button
+                        {{ vote == candidate.id ?
+                            (pending ? 'btn-primary disabled' :
+                              'btn-success active')
+                              : ((candidate.progress + 1) * (voteWeight || 1)
+                                  > candidate.request ?
+                                  'btn-primary disabled'
+                                  : 'btn-primary')
+                          }}"
+                 ng-click="voteFor(candidate, 0)"
+                 ng-show="vote.length == 1">
+                {{ getVerbFor(candidate) }}
+            </a>
+            <div class="progress vote-progress" ng-show="candidate.request && (showProgress || isAdmin)">
+              <div class="progress-bar progress-bar-success progress-bar-striped"
+                   style="
+                     width:{{ candidate.progress * (voteWeight || 1) * 100
+                         / candidate.request }}%;">
+              </div>
+            </div>
+            <div class="vote-caption" ng-show="candidate.request && (showProgress || isAdmin)">
+              {{ candidate.progress * (voteWeight || 1) | number:0 }} of
+              {{ candidate.request | number:0 }}
+            </div>
+          </td>
+          <td ng-show="editMode" class="vote-right">
+            <input type="number" class="form-control"
+                   ng-model="candidate.request" placeholder="(no target)"/>
+            <input type="text" class="form-control"
+                   ng-model="candidate.section" placeholder="(no section)"/>
+          </td>
+        </tr>
+      </tbody>
       <tr ng-show="editMode">
         <td colspan="2">
             <a class="btn btn-primary"

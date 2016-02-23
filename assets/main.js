@@ -1,4 +1,4 @@
-var voteApp = angular.module('voteApp', ['ui.bootstrap']);
+var voteApp = angular.module('voteApp', ['ui.bootstrap', 'angular.filter']);
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
@@ -35,6 +35,7 @@ voteApp.controller('VoteCtrl', function ($sce, $scope, $timeout, $interval, $htt
   $scope.descriptionText = "";
   $scope.hasDescription = false;
   $scope.voteLimit = 1;
+  $scope.expanded = {};
   
   $scope.updateCandidates = function(data) {
     var newCands = data.candidates || [];
@@ -92,7 +93,7 @@ voteApp.controller('VoteCtrl', function ($sce, $scope, $timeout, $interval, $htt
     
     $scope.editMode = newMode;
   };
-  
+
   $scope.voteFor = function(candidate, order) {
     var prev = $scope.vote.slice();
 
@@ -202,4 +203,8 @@ voteApp.controller('VoteCtrl', function ($sce, $scope, $timeout, $interval, $htt
       return text; // in case the library fails.
     }
   }
+  
+  $scope.expand = function(section) {
+    $scope.expanded[section] = !$scope.expanded[section];
+  };
 });

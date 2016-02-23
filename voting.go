@@ -214,6 +214,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				"<link rel='stylesheet' href='/styles.css'>"+
 				"<script src='https://cdnjs.cloudflare.com/ajax/libs/"+
 				"angular.js/1.3.15/angular.min.js'></script>"+
+				"<script src='https://cdnjs.cloudflare.com/ajax/libs/angular-filter/"+
+				"0.5.8/angular-filter.min.js'></script>"+
 				"<script src='https://cdnjs.cloudflare.com/ajax/libs/"+
 				"angular-ui-bootstrap/0.13.0/ui-bootstrap.min.js'></script>"+
 				"<script src='https://cdnjs.cloudflare.com/ajax/libs/showdown/1.0.1/"+
